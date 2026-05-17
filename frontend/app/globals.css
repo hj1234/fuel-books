@@ -1,0 +1,292 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Light theme (default). Variables live on :root so they can be overridden by
+   the dark scheme without changing utility class names.
+   ------------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-muted: #f1efe9;
+  --surface-elevated: #ffffff;
+
+  /* Foreground */
+  --fg: #18181b;
+  --fg-muted: #52525b;
+  --fg-subtle: #a1a1aa;
+
+  /* Borders */
+  --border: #e7e5df;
+  --border-strong: #d6d3cd;
+
+  /* Brand / primary */
+  --primary: #1c1c1f;
+  --primary-fg: #fafaf7;
+  --primary-hover: #2a2a2e;
+
+  /* Accent — restrained deep teal, used for focus, links, chart line */
+  --accent: #14534f;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(20, 83, 79, 0.08);
+
+  /* Semantic */
+  --success: #15803d;
+  --success-fg: #ffffff;
+  --success-soft: #ecfdf5;
+  --success-soft-fg: #065f46;
+
+  --warning: #b45309;
+  --warning-fg: #ffffff;
+  --warning-soft: #fef3c7;
+  --warning-soft-fg: #78350f;
+
+  --danger: #b91c1c;
+  --danger-fg: #ffffff;
+  --danger-soft: #fef2f2;
+  --danger-soft-fg: #991b1b;
+
+  --info: #1d4ed8;
+  --info-fg: #ffffff;
+  --info-soft: #eff6ff;
+  --info-soft-fg: #1e3a8a;
+
+  /* Effects */
+  --ring-focus: 0 0 0 3px rgba(20, 83, 79, 0.18);
+  --shadow-sm: 0 1px 2px rgba(15, 15, 20, 0.04), 0 1px 1px rgba(15, 15, 20, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 15, 20, 0.06), 0 1px 2px rgba(15, 15, 20, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 15, 20, 0.10), 0 2px 6px rgba(15, 15, 20, 0.05);
+}
+
+/* Dark theme — applied when system prefers dark, unless the user has forced
+   a theme via [data-theme]. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg: #0b0b0e;
+    --surface: #141418;
+    --surface-muted: #1b1b20;
+    --surface-elevated: #1f1f24;
+
+    --fg: #f4f4f5;
+    --fg-muted: #a1a1aa;
+    --fg-subtle: #71717a;
+
+    --border: #27272a;
+    --border-strong: #3f3f46;
+
+    --primary: #f4f4f5;
+    --primary-fg: #0b0b0e;
+    --primary-hover: #e4e4e7;
+
+    --accent: #5eb7af;
+    --accent-fg: #0b0b0e;
+    --accent-soft: rgba(94, 183, 175, 0.14);
+
+    --success: #4ade80;
+    --success-fg: #052e16;
+    --success-soft: rgba(74, 222, 128, 0.12);
+    --success-soft-fg: #86efac;
+
+    --warning: #fbbf24;
+    --warning-fg: #1f1300;
+    --warning-soft: rgba(251, 191, 36, 0.12);
+    --warning-soft-fg: #fde68a;
+
+    --danger: #f87171;
+    --danger-fg: #1a0606;
+    --danger-soft: rgba(248, 113, 113, 0.12);
+    --danger-soft-fg: #fecaca;
+
+    --info: #60a5fa;
+    --info-fg: #061328;
+    --info-soft: rgba(96, 165, 250, 0.12);
+    --info-soft-fg: #bfdbfe;
+
+    --ring-focus: 0 0 0 3px rgba(94, 183, 175, 0.28);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* Manual theme overrides (toggle via <html data-theme="light|dark">) */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface-muted: #f1efe9;
+  --surface-elevated: #ffffff;
+  --fg: #18181b;
+  --fg-muted: #52525b;
+  --fg-subtle: #a1a1aa;
+  --border: #e7e5df;
+  --border-strong: #d6d3cd;
+  --primary: #1c1c1f;
+  --primary-fg: #fafaf7;
+  --primary-hover: #2a2a2e;
+  --accent: #14534f;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(20, 83, 79, 0.08);
+  --success: #15803d;
+  --success-fg: #ffffff;
+  --success-soft: #ecfdf5;
+  --success-soft-fg: #065f46;
+  --warning: #b45309;
+  --warning-fg: #ffffff;
+  --warning-soft: #fef3c7;
+  --warning-soft-fg: #78350f;
+  --danger: #b91c1c;
+  --danger-fg: #ffffff;
+  --danger-soft: #fef2f2;
+  --danger-soft-fg: #991b1b;
+  --info: #1d4ed8;
+  --info-fg: #ffffff;
+  --info-soft: #eff6ff;
+  --info-soft-fg: #1e3a8a;
+  --ring-focus: 0 0 0 3px rgba(20, 83, 79, 0.18);
+  --shadow-sm: 0 1px 2px rgba(15, 15, 20, 0.04), 0 1px 1px rgba(15, 15, 20, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 15, 20, 0.06), 0 1px 2px rgba(15, 15, 20, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 15, 20, 0.10), 0 2px 6px rgba(15, 15, 20, 0.05);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0b0b0e;
+  --surface: #141418;
+  --surface-muted: #1b1b20;
+  --surface-elevated: #1f1f24;
+  --fg: #f4f4f5;
+  --fg-muted: #a1a1aa;
+  --fg-subtle: #71717a;
+  --border: #27272a;
+  --border-strong: #3f3f46;
+  --primary: #f4f4f5;
+  --primary-fg: #0b0b0e;
+  --primary-hover: #e4e4e7;
+  --accent: #5eb7af;
+  --accent-fg: #0b0b0e;
+  --accent-soft: rgba(94, 183, 175, 0.14);
+  --success: #4ade80;
+  --success-fg: #052e16;
+  --success-soft: rgba(74, 222, 128, 0.12);
+  --success-soft-fg: #86efac;
+  --warning: #fbbf24;
+  --warning-fg: #1f1300;
+  --warning-soft: rgba(251, 191, 36, 0.12);
+  --warning-soft-fg: #fde68a;
+  --danger: #f87171;
+  --danger-fg: #1a0606;
+  --danger-soft: rgba(248, 113, 113, 0.12);
+  --danger-soft-fg: #fecaca;
+  --info: #60a5fa;
+  --info-fg: #061328;
+  --info-soft: rgba(96, 165, 250, 0.12);
+  --info-soft-fg: #bfdbfe;
+  --ring-focus: 0 0 0 3px rgba(94, 183, 175, 0.28);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------------------------------------------------------------------------
+   Theme — expose the CSS variables as Tailwind tokens so utilities like
+   `bg-surface`, `text-fg-muted`, `border-default` work everywhere.
+   ------------------------------------------------------------------------ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-elevated: var(--surface-elevated);
+
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  --color-border-default: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-fg: var(--success-soft-fg);
+
+  --color-warning: var(--warning);
+  --color-warning-fg: var(--warning-fg);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-fg: var(--warning-soft-fg);
+
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-fg: var(--danger-soft-fg);
+
+  --color-info: var(--info);
+  --color-info-fg: var(--info-fg);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-fg: var(--info-soft-fg);
+
+  --shadow-soft-sm: var(--shadow-sm);
+  --shadow-soft-md: var(--shadow-md);
+  --shadow-soft-lg: var(--shadow-lg);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, "Liberation Mono", monospace;
+}
+
+/* Allow `dark:` Tailwind variant when an ancestor (typically <html>) is forced
+   to dark via data-theme. */
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------------------------------------------------------------------------
+   Base element styling
+   ------------------------------------------------------------------------ */
+html,
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: var(--accent-soft);
+  color: var(--fg);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+  border-radius: 6px;
+}
+
+/* Reduce default focus jank on links/buttons that already paint their own ring. */
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  box-shadow: var(--ring-focus);
+}
