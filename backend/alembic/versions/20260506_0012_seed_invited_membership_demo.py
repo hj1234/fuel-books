@@ -25,6 +25,10 @@ def upgrade() -> None:
 
     conn = op.get_bind()
 
+    # Demo row targets aircraft_id=1 from seed 0010; production skips 0010 unless SEED_DEMO_DATA is set.
+    if not conn.execute(sa.text("SELECT 1 FROM aircraft WHERE id = 1")).scalar():
+        return
+
     # Add an invited-only pilot membership example for aircraft 1.
     # (No user_id yet; invitation flow will attach a user later.)
     stmt = (
