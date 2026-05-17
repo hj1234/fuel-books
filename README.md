@@ -68,7 +68,7 @@ Deploy as **two Railway services** from the **same GitHub repo**. The **backend*
 
 **Build**: `backend/Dockerfile` copies the full tree then runs **`pip install .`** (fixes Nixpacks `pip install -r requirements.txt` failing when the package layout isn’t present yet).
 
-**Deploy**: `backend/railway.toml` sets **`preDeployCommand`** (`alembic upgrade head`) and **`startCommand`** (uvicorn). Ensure the service **Root directory** is exactly **`backend`** so `README.md`, `app/`, and `pyproject.toml` are all in the build context.
+**Deploy**: `backend/railway.toml` sets **`preDeployCommand`** (`alembic upgrade head`). **`Dockerfile`** **`CMD`** starts uvicorn with `sh -c` so **`${PORT}`** is expanded (Railway’s **startCommand** does not run through a shell, so **`$PORT`** would be passed literally). Ensure the service **Root directory** is exactly **`backend`** so `README.md`, `app/`, and `pyproject.toml` are all in the build context.
 
 **Dependencies**: `psycopg[binary]` is in `pyproject.toml`. Optional **`requirements.txt`** (`.`) is for non-Docker pip installs.
 
