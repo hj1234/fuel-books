@@ -83,7 +83,7 @@ def upgrade() -> None:
         sa.Column("percent_rate", sa.Numeric(10, 6), nullable=True),
         sa.Column("benchmark_airfield_code", sa.String(length=8), nullable=True),
         sa.Column("benchmark_multiplier", sa.Numeric(10, 6), nullable=True),
-        sa.Column("reimburse_vat", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+        sa.Column("reimburse_vat", sa.Boolean(), nullable=False, server_default=sa.text("false")),
         sa.UniqueConstraint("policy_id", "country_code", "effective_from", name="uq_policy_country_effective_from"),
     )
 
