@@ -22,7 +22,7 @@ depends_on = None
 def upgrade() -> None:
     conn = op.get_bind()
 
-    # Expand country_code to allow 'ROW' and insert the ROW policy row for aircraft 1 (policy_id=1).
+    # Expand country_code to allow 'ROW'; ROW demo insert runs later only if policy id 1 exists.
     # SQLite doesn't support ALTER COLUMN, so rebuild the table.
     # PostgreSQL: drop UNIQUE first — constraint names are schema-wide (same name on __new conflicts).
     if conn.dialect.name == "postgresql":
@@ -60,21 +60,22 @@ def upgrade() -> None:
     op.drop_table("fuel_policy_country_rates")
     op.rename_table("fuel_policy_country_rates__new", "fuel_policy_country_rates")
 
-    # Insert ROW rule for current aircraft/policy (policy_id=1).
-    conn.execute(
-        sa.text(
-            """
-            INSERT INTO fuel_policy_country_rates
-              (policy_id, country_code, effective_from, effective_to, calc_type,
-               percent_rate, benchmark_airfield_code, benchmark_multiplier, reimburse_vat)
-            VALUES
-              (1, 'ROW', :effective_from, NULL, 'ACTUALS_CAPPED_TO_BENCHMARK_EX_VAT',
-               NULL, 'EGHO', 1.10, false)
-            ON CONFLICT(policy_id, country_code, effective_from) DO NOTHING
-            """
-        ),
-        {"effective_from": date(2025, 1, 1)},
-    )
+    # Demo-only ROW rule referenced policy_id=1 from legacy seed migration 0002. Fresh databases may have no rows yet.
+    if conn.execute(sa.text("SELECT 1 FROM fuel_policies WHERE id = 1")).scalar():
+        conn.execute(
+            sa.text(
+                """
+                INSERT INTO fuel_policy_country_rates
+                  (policy_id, country_code, effective_from, effective_to, calc_type,
+                   percent_rate, benchmark_airfield_code, benchmark_multiplier, reimburse_vat)
+                VALUES
+                  (1, 'ROW', :effective_from, NULL, 'ACTUALS_CAPPED_TO_BENCHMARK_EX_VAT',
+                   NULL, 'EGHO', 1.10, false)
+                ON CONFLICT(policy_id, country_code, effective_from) DO NOTHING
+                """
+            ),
+            {"effective_from": date(2025, 1, 1)},
+        )
 
 
 def downgrade() -> None:
