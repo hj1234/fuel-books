@@ -1,0 +1,2 @@
+# Railway / production pip install (reads pyproject.toml).
+-e .

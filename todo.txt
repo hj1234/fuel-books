@@ -1,0 +1,19 @@
+pilot can upload to the platform including evidence - goes to draft refund for admin to approve
+
+fx rate viewer - chart given rate?
+
+delete aircraft does not work
+
+test benchmark fuel price with a lot of datapoints 
+
+add multiple benchmark prices - for example with several airports
+
+auto benchmark import for EGHO
+
+invoice flow
+
+default benchmark chart to show ex VAT price
+
+show calculation breakdown if i click on an option
+
+remove membership 
