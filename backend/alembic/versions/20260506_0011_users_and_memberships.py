@@ -17,6 +17,92 @@ branch_labels = None
 depends_on = None
 
 
+def _drop_foreign_keys_referencing(conn: sa.Connection, referred_table: str) -> None:
+    """PostgreSQL-only callers: DROP TABLE fails while child FKs reference the table."""
+    insp = sa.inspect(conn)
+    for table_name in insp.get_table_names():
+        for fk in insp.get_foreign_keys(table_name):
+            if fk.get("referred_table") != referred_table:
+                continue
+            name = fk.get("name")
+            if not name:
+                continue
+            op.drop_constraint(name, table_name, type_="foreignkey")
+
+
+def _restore_users_child_foreign_keys() -> None:
+    op.create_foreign_key(
+        None,
+        "aircraft",
+        "users",
+        ["admin_user_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "fuel_policies",
+        "users",
+        ["owner_admin_user_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+
+
+def _restore_aircraft_child_foreign_keys() -> None:
+    op.create_foreign_key(
+        None,
+        "pilots",
+        "aircraft",
+        ["aircraft_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "aircraft_fuel_policies",
+        "aircraft",
+        ["aircraft_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "fuel_expenses",
+        "aircraft",
+        ["aircraft_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+
+
+def _restore_fuel_policies_child_foreign_keys() -> None:
+    op.create_foreign_key(
+        None,
+        "fuel_policy_country_rates",
+        "fuel_policies",
+        ["policy_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "fuel_benchmark_prices",
+        "fuel_policies",
+        ["policy_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "aircraft_fuel_policies",
+        "fuel_policies",
+        ["fuel_policy_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+
+
 def upgrade() -> None:
     conn = op.get_bind()
     insp = sa.inspect(conn)
@@ -54,10 +140,15 @@ def upgrade() -> None:
         )
     )
 
+    # PostgreSQL: dependents (aircraft, fuel_policies) hold FKs to users — drop before DROP TABLE.
+    if conn.dialect.name == "postgresql":
+        _drop_foreign_keys_referencing(conn, "users")
     op.drop_table("users")
     op.rename_table("users__new", "users")
     op.drop_index("ix_users_email__new", table_name="users")
     op.create_index("ix_users_email", "users", ["email"], unique=False)
+    if conn.dialect.name == "postgresql":
+        _restore_users_child_foreign_keys()
 
     # 3) Rebuild aircraft to rename admin_user_id -> owner_user_id and point FK to users
     # PostgreSQL: explicit UNIQUE name matches old table — drop before creating __new.
@@ -86,8 +177,12 @@ def upgrade() -> None:
             """
         )
     )
+    if conn.dialect.name == "postgresql":
+        _drop_foreign_keys_referencing(conn, "aircraft")
     op.drop_table("aircraft")
     op.rename_table("aircraft__new", "aircraft")
+    if conn.dialect.name == "postgresql":
+        _restore_aircraft_child_foreign_keys()
 
     # 4) Rebuild fuel_policies to rename owner_admin_user_id -> owner_user_id and point FK to users
     op.create_table(
@@ -109,10 +204,14 @@ def upgrade() -> None:
         )
     )
     op.execute("DROP INDEX IF EXISTS ix_fuel_policies_owner_admin_user_id")
+    if conn.dialect.name == "postgresql":
+        _drop_foreign_keys_referencing(conn, "fuel_policies")
     op.drop_table("fuel_policies")
     op.rename_table("fuel_policies__new", "fuel_policies")
     op.drop_index("ix_fuel_policies_owner_user_id__new", table_name="fuel_policies")
     op.create_index("ix_fuel_policies_owner_user_id", "fuel_policies", ["owner_user_id"], unique=False)
+    if conn.dialect.name == "postgresql":
+        _restore_fuel_policies_child_foreign_keys()
 
     # 5) Add aircraft_memberships table
     op.create_table(
