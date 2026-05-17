@@ -16,6 +16,55 @@ down_revision = "20260506_0008"
 branch_labels = None
 depends_on = None
 
+# Children that FK to fuel_policies — must drop before DROP TABLE fuel_policies on PostgreSQL.
+_POLICY_CHILD_TABLES = (
+    "fuel_policy_country_rates",
+    "fuel_benchmark_prices",
+    "aircraft_fuel_policies",
+)
+
+
+def _drop_foreign_keys_to_fuel_policies(conn: sa.Connection) -> None:
+    insp = sa.inspect(conn)
+    tables = set(insp.get_table_names())
+    for table_name in _POLICY_CHILD_TABLES:
+        if table_name not in tables:
+            continue
+        for fk in insp.get_foreign_keys(table_name):
+            if fk.get("referred_table") != "fuel_policies":
+                continue
+            name = fk.get("name")
+            if not name:
+                continue
+            op.drop_constraint(name, table_name, type_="foreignkey")
+
+
+def _create_foreign_keys_to_fuel_policies() -> None:
+    op.create_foreign_key(
+        None,
+        "fuel_policy_country_rates",
+        "fuel_policies",
+        ["policy_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "fuel_benchmark_prices",
+        "fuel_policies",
+        ["policy_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+    op.create_foreign_key(
+        None,
+        "aircraft_fuel_policies",
+        "fuel_policies",
+        ["fuel_policy_id"],
+        ["id"],
+        ondelete="CASCADE",
+    )
+
 
 def upgrade() -> None:
     conn = op.get_bind()
@@ -81,10 +130,15 @@ def upgrade() -> None:
         )
     )
 
+    # PostgreSQL rejects DROP TABLE while dependents hold FKs to it; SQLite cannot ALTER ADD FK (see batch mode).
+    if conn.dialect.name == "postgresql":
+        _drop_foreign_keys_to_fuel_policies(conn)
     op.drop_table("fuel_policies")
     op.rename_table("fuel_policies__new", "fuel_policies")
     op.drop_index("ix_fuel_policies_owner_admin_user_id__new", table_name="fuel_policies")
     op.create_index("ix_fuel_policies_owner_admin_user_id", "fuel_policies", ["owner_admin_user_id"], unique=False)
+    if conn.dialect.name == "postgresql":
+        _create_foreign_keys_to_fuel_policies()
 
 
 def downgrade() -> None:
