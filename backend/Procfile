@@ -1,2 +1,3 @@
-release: alembic upgrade head
+# Fallback when not using backend/railway.toml (e.g. Heroku).
+# Railway: prefer Dockerfile + railway.toml (releaseCommand runs migrations).
 web: uvicorn app.main:app --host 0.0.0.0 --port $PORT

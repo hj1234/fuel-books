@@ -1,2 +1,3 @@
-# Railway / production pip install (reads pyproject.toml).
--e .
+# Optional: Nixpacks / pip-only installs (full `backend/` tree must be present).
+# Prefer the Dockerfile on Railway — it copies the whole package before `pip install`.
+.

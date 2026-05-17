@@ -1,0 +1,11 @@
+# Config-as-code when Railway service root directory is `backend`.
+# If Railway doesn’t pick this up, set custom config path to `/backend/railway.toml`.
+# https://docs.railway.com/deploy/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+preDeployCommand = ["alembic", "upgrade", "head"]
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"

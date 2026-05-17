@@ -50,7 +50,7 @@ See `backend/README.md` for the full list. The key ones:
 
 ## Railway deployment
 
-Deploy as **two Railway services** from the **same GitHub repo**. The repo includes **`Procfile`** files so Railway can run migrations and start each process without extra dashboard commands.
+Deploy as **two Railway services** from the **same GitHub repo**. The **backend** uses a **`Dockerfile`** plus **`backend/railway.toml`** (migrations + start command). Frontends still use **`Procfile`** / Nixpacks.
 
 ### 1. Create the Railway project
 
@@ -66,12 +66,11 @@ Deploy as **two Railway services** from the **same GitHub repo**. The repo inclu
 5. Set **`FRONTEND_BASE_URL`** to your **frontend’s public URL** once it exists (needed for password reset / verify-email links). Example: `https://your-app.up.railway.app`.
 6. Copy other values from `backend/.env.example` as needed (`EMAIL_PROVIDER`, `RESEND_API_KEY`, etc.).
 
-**Procfile** (in `backend/`):
+**Build**: `backend/Dockerfile` copies the full tree then runs **`pip install .`** (fixes Nixpacks `pip install -r requirements.txt` failing when the package layout isn’t present yet).
 
-- **`release`**: `alembic upgrade head` — runs before each deploy.
-- **`web`**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+**Deploy**: `backend/railway.toml` sets **`preDeployCommand`** (`alembic upgrade head`) and **`startCommand`** (uvicorn). Ensure the service **Root directory** is exactly **`backend`** so `README.md`, `app/`, and `pyproject.toml` are all in the build context.
 
-**Dependencies**: `psycopg[binary]` is in `pyproject.toml` for Postgres. **`requirements.txt`** uses `-e .` so Railway’s Python build installs the package.
+**Dependencies**: `psycopg[binary]` is in `pyproject.toml`. Optional **`requirements.txt`** (`.`) is for non-Docker pip installs.
 
 ### 3. Frontend service (Next.js)
 
@@ -86,7 +85,7 @@ Nixpacks will run `npm install` / `npm run build` automatically when it detects 
 ### 4. After deploy
 
 1. Open the **backend** URL `/docs` to confirm the API is up.
-2. Open the **frontend** URL and register / log in (migrations already ran via **release**).
+2. Open the **frontend** URL and register / log in (migrations run via **`preDeployCommand`** before each deploy).
 3. Optional: attach **custom domains** to both services and update **`FRONTEND_BASE_URL`** and **`FASTAPI_BASE_URL`** accordingly.
 
 Because the frontend uses Next route handlers as a BFF and stores the access token in an httpOnly cookie, the browser does not need to call FastAPI directly (no CORS dependency).
