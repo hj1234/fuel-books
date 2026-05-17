@@ -112,9 +112,9 @@ def upgrade() -> None:
             INSERT INTO fuel_policy_country_rates
               (policy_id, country_code, effective_from, effective_to, calc_type, percent_rate, benchmark_airfield_code, benchmark_multiplier, reimburse_vat)
             VALUES
-              (:policy_id, 'GB', :effective_from, NULL, 'ACTUALS_CAPPED_TO_BENCHMARK', NULL, 'EGHO', 1.10, 1),
-              (:policy_id, 'JE', :effective_from, NULL, 'BENCHMARK_EX_VAT', NULL, 'EGHO', NULL, 0),
-              (:policy_id, 'GG', :effective_from, NULL, 'BENCHMARK_EX_VAT', NULL, 'EGHO', NULL, 0)
+              (:policy_id, 'GB', :effective_from, NULL, 'ACTUALS_CAPPED_TO_BENCHMARK', NULL, 'EGHO', 1.10, true),
+              (:policy_id, 'JE', :effective_from, NULL, 'BENCHMARK_EX_VAT', NULL, 'EGHO', NULL, false),
+              (:policy_id, 'GG', :effective_from, NULL, 'BENCHMARK_EX_VAT', NULL, 'EGHO', NULL, false)
             ON CONFLICT(policy_id, country_code, effective_from) DO NOTHING
             """
         ),
@@ -140,7 +140,7 @@ def upgrade() -> None:
                 INSERT INTO fuel_benchmark_prices
                   (policy_id, airfield_code, effective_from, fuel_type, price_per_unit, unit, currency, includes_vat, vat_rate, created_at, updated_at)
                 VALUES
-                  (:policy_id, 'EGHO', :effective_from, 'AVGAS', :inc_vat, 'L', 'GBP', 1, 0.20, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                  (:policy_id, 'EGHO', :effective_from, 'AVGAS', :inc_vat, 'L', 'GBP', true, 0.20, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 """
             ),
             {"policy_id": policy_id, "effective_from": effective_from, "inc_vat": inc_vat},

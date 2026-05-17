@@ -21,6 +21,10 @@ def upgrade() -> None:
     conn = op.get_bind()
 
     # SQLite rebuild: add policy_id + change unique constraint to include policy_id.
+    # PostgreSQL: drop UNIQUE first — same constraint name on __new conflicts while old table exists.
+    if conn.dialect.name == "postgresql":
+        op.drop_constraint("uq_benchmark_effective_vat", "fuel_benchmark_prices", type_="unique")
+
     op.create_table(
         "fuel_benchmark_prices__new",
         sa.Column("id", sa.Integer(), primary_key=True),

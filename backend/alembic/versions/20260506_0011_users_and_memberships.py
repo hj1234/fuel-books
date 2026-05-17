@@ -19,11 +19,10 @@ depends_on = None
 
 def upgrade() -> None:
     conn = op.get_bind()
+    insp = sa.inspect(conn)
+    existing_tables = set(insp.get_table_names())
 
     # 1) Rename admin_users -> users
-    existing_tables = {
-        row[0] for row in conn.execute(sa.text("SELECT name FROM sqlite_master WHERE type='table'")).fetchall()
-    }
     if "admin_users" in existing_tables and "users" not in existing_tables:
         op.rename_table("admin_users", "users")
 
@@ -49,7 +48,7 @@ def upgrade() -> None:
         sa.text(
             """
             INSERT INTO users__new (id, email, full_name, password_hash, can_login, created_at, updated_at)
-            SELECT id, email, full_name, password_hash, 1, created_at, updated_at
+            SELECT id, email, full_name, password_hash, true, created_at, updated_at
             FROM users
             """
         )
@@ -61,6 +60,10 @@ def upgrade() -> None:
     op.create_index("ix_users_email", "users", ["email"], unique=False)
 
     # 3) Rebuild aircraft to rename admin_user_id -> owner_user_id and point FK to users
+    # PostgreSQL: explicit UNIQUE name matches old table — drop before creating __new.
+    if conn.dialect.name == "postgresql":
+        op.drop_constraint("uq_aircraft_owner_registration", "aircraft", type_="unique")
+
     op.create_table(
         "aircraft__new",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -143,6 +146,22 @@ def upgrade() -> None:
     # Create user rows from pilots; allow null email for name-only pilots.
     # Note: SQLite allows multiple NULLs in a UNIQUE column.
     pilot_rows = conn.execute(sa.text("SELECT id, aircraft_id, name, email FROM pilots")).fetchall()
+    membership_sql = (
+        """
+                INSERT INTO aircraft_memberships
+                  (aircraft_id, user_id, invited_email, role, status, invited_at, accepted_at)
+                VALUES
+                  (:aircraft_id, :user_id, NULL, 'PILOT', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ON CONFLICT (aircraft_id, user_id) DO NOTHING
+                """
+        if conn.dialect.name == "postgresql"
+        else """
+                INSERT OR IGNORE INTO aircraft_memberships
+                  (aircraft_id, user_id, invited_email, role, status, invited_at, accepted_at)
+                VALUES
+                  (:aircraft_id, :user_id, NULL, 'PILOT', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                """
+    )
     for _pid, aircraft_id, name, email in pilot_rows:
         existing_user_id = None
         if email:
@@ -155,7 +174,7 @@ def upgrade() -> None:
                 sa.text(
                     """
                     INSERT INTO users (email, full_name, password_hash, can_login, created_at, updated_at)
-                    VALUES (:email, :full_name, NULL, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    VALUES (:email, :full_name, NULL, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                     RETURNING id
                     """
                 ),
@@ -163,14 +182,7 @@ def upgrade() -> None:
             ).scalar_one()
 
         conn.execute(
-            sa.text(
-                """
-                INSERT OR IGNORE INTO aircraft_memberships
-                  (aircraft_id, user_id, invited_email, role, status, invited_at, accepted_at)
-                VALUES
-                  (:aircraft_id, :user_id, NULL, 'PILOT', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                """
-            ),
+            sa.text(membership_sql),
             {"aircraft_id": aircraft_id, "user_id": user_id},
         )
 

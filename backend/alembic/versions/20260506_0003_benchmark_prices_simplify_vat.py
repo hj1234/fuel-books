@@ -21,6 +21,12 @@ def upgrade() -> None:
     # SQLite: rebuild table to drop column / change constraints.
     conn = op.get_bind()
 
+    # PostgreSQL: UNIQUE constraint names are schema-wide. The old table already owns
+    # `uq_benchmark_effective_vat`; drop it before creating `fuel_benchmark_prices__new`
+    # with the same constraint name (SQLite scopes names per-table).
+    if conn.dialect.name == "postgresql":
+        op.drop_constraint("uq_benchmark_effective_vat", "fuel_benchmark_prices", type_="unique")
+
     op.create_table(
         "fuel_benchmark_prices__new",
         sa.Column("id", sa.Integer(), primary_key=True),

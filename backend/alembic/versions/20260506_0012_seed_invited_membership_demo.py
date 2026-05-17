@@ -27,16 +27,23 @@ def upgrade() -> None:
 
     # Add an invited-only pilot membership example for aircraft 1.
     # (No user_id yet; invitation flow will attach a user later.)
-    conn.execute(
-        sa.text(
+    stmt = (
+        """
+            INSERT INTO aircraft_memberships
+              (aircraft_id, user_id, invited_email, role, status, invited_at, accepted_at)
+            VALUES
+              (1, NULL, 'invited.pilot@example.com', 'PILOT', 'INVITED', CURRENT_TIMESTAMP, NULL)
+            ON CONFLICT (aircraft_id, invited_email) DO NOTHING
             """
+        if conn.dialect.name == "postgresql"
+        else """
             INSERT OR IGNORE INTO aircraft_memberships
               (aircraft_id, user_id, invited_email, role, status, invited_at, accepted_at)
             VALUES
               (1, NULL, 'invited.pilot@example.com', 'PILOT', 'INVITED', CURRENT_TIMESTAMP, NULL)
             """
-        )
     )
+    conn.execute(sa.text(stmt))
 
 
 def downgrade() -> None:

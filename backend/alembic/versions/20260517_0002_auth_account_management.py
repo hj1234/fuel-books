@@ -32,8 +32,10 @@ def upgrade() -> None:
     # Skip name-only pilot stubs (can_login=0, no email) so we don't backfill rows
     # that have no email address.
     op.execute(
-        "UPDATE users SET email_verified_at = CURRENT_TIMESTAMP "
-        "WHERE email_verified_at IS NULL AND email IS NOT NULL AND can_login = 1"
+        sa.text(
+            "UPDATE users SET email_verified_at = CURRENT_TIMESTAMP "
+            "WHERE email_verified_at IS NULL AND email IS NOT NULL AND can_login IS TRUE"
+        )
     )
 
     # 2) New auth_tokens table.

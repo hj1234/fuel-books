@@ -24,6 +24,10 @@ def upgrade() -> None:
 
     # Expand country_code to allow 'ROW' and insert the ROW policy row for aircraft 1 (policy_id=1).
     # SQLite doesn't support ALTER COLUMN, so rebuild the table.
+    # PostgreSQL: drop UNIQUE first — constraint names are schema-wide (same name on __new conflicts).
+    if conn.dialect.name == "postgresql":
+        op.drop_constraint("uq_policy_country_effective_from", "fuel_policy_country_rates", type_="unique")
+
     op.create_table(
         "fuel_policy_country_rates__new",
         sa.Column("id", sa.Integer(), primary_key=True),
@@ -65,7 +69,7 @@ def upgrade() -> None:
                percent_rate, benchmark_airfield_code, benchmark_multiplier, reimburse_vat)
             VALUES
               (1, 'ROW', :effective_from, NULL, 'ACTUALS_CAPPED_TO_BENCHMARK_EX_VAT',
-               NULL, 'EGHO', 1.10, 0)
+               NULL, 'EGHO', 1.10, false)
             ON CONFLICT(policy_id, country_code, effective_from) DO NOTHING
             """
         ),
