@@ -8,7 +8,7 @@ import {
   type AircraftPolicyCandidate,
   type BenchmarkPriceOut,
 } from "@/components/BenchmarkPriceForm";
-import { BenchmarkPricesChart } from "@/components/BenchmarkPricesChart";
+import { BenchmarkPricesChart, type AircraftMeta } from "@/components/BenchmarkPricesChart";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { Modal } from "@/components/ui/Modal";
@@ -30,9 +30,17 @@ export function BenchmarkPricesClient({
   const [aircraftFilter, setAircraftFilter] = useState<string>(ALL_AIRCRAFT);
 
   const aircraftByPolicy = useMemo(() => {
-    const map = new Map<string, AircraftPolicyCandidate>();
+    const map = new Map<string, AircraftMeta>();
     for (const c of candidates) {
-      if (c.policy_id != null && !map.has(c.policy_id)) map.set(c.policy_id, c);
+      const pid = c.policy_id;
+      if (pid != null && !map.has(pid)) {
+        map.set(pid, {
+          aircraft_id: c.aircraft_id,
+          aircraft_registration: c.aircraft_registration,
+          policy_id: pid,
+          home_base_airfield: c.home_base_airfield,
+        });
+      }
     }
     return map;
   }, [candidates]);

@@ -42,6 +42,12 @@ app.include_router(policy_router)
 app.include_router(internal_jobs_router)
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    """Public URL probes (e.g. Railway) often hit `/` and expect 200 — not a 404."""
+    return {"service": "fuel-books-api", "health": "/health", "docs": "/docs"}
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}

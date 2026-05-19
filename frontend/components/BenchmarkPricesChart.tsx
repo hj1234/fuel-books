@@ -18,7 +18,7 @@ export type BenchmarkPriceOut = {
   vat_rate: number;
 };
 
-type AircraftMeta = {
+export type AircraftMeta = {
   aircraft_id: string;
   aircraft_registration: string;
   policy_id: string;
